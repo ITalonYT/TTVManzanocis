@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playing with Viewers</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #ffd700; /* Gold text color */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 36px;
+        }
+        #participantForm {
+            display: none;
+            margin-bottom: 20px;
+        }
+        #participants {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #222;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Playing with Viewers</h1>
+    <button id="addUsernameButton">Add Username</button>
+    <form id="participantForm">
+        <label for="username">Enter your username:</label>
+        <input type="text" id="username" name="username" required>
+        <button type="submit">Add to Wheel</button>
+    </form>
+    <div id="participants">
+        <!-- Participants will be displayed here -->
+    </div>
+
+    <!-- Open/Close Button -->
+    <button id="openCloseButton" onclick="toggleOpenClose()">Open</button>
+
+    <!-- Creator Mode Modal -->
+    <div id="creatorModeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreatorModeModal()">&times;</span>
+            <h2>Creator Mode</h2>
+            <p>Enter the code to access creator mode:</p>
+            <input type="text" id="creatorCode" name="creatorCode">
+            <button onclick="activateCreatorMode()">Enter</button>
+        </div>
+    </div>
+
+    <script>
+        let isOpen = true;
+        let participants = [];
+
+        function openUsernameForm() {
+            if (isOpen) {
+                document.getElementById("participantForm").style.display = "block";
+            } else {
+                alert("Submissions are currently closed.");
+            }
+        }
+
+        document.getElementById("participantForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let username = document.getElementById("username").value;
+            if (isOpen) {
+                addParticipant(username);
+            } else {
+                alert("Submissions are currently closed.");
+            }
+            document.getElementById("username").value = "";
+        });
+
+        function addParticipant(username) {
+            if (!participants.includes(username)) {
+                participants.push(username);
+                let participantList = document.getElementById("participants");
+                let listItem = document.createElement("p");
+                listItem.textContent = username;
+                listItem.setAttribute("data-username", username); // Add username attribute for removal
+                listItem.addEventListener("click", function() {
+                    removeParticipant(username);
+                });
+                participantList.appendChild(listItem);
+            } else {
+                alert("You have already submitted your username.");
+            }
+        }
+
+        function removeParticipant(username) {
+            participants = participants.filter(participant => participant !== username);
+            let participantList = document.getElementById("participants");
+            participantList.innerHTML = ""; // Clear the list
+            participants.forEach(participant => {
+                let listItem = document.createElement("p");
+                listItem.textContent = participant;
+                listItem.setAttribute("data-username", participant);
+                listItem.addEventListener("click", function() {
+                    removeParticipant(participant);
+                });
+                participantList.appendChild(listItem);
+            });
+        }
+
+        function toggleOpenClose() {
+            isOpen = !isOpen;
+            let button = document.getElementById("openCloseButton");
+            button.textContent = isOpen ? "Close" : "Open";
+            document.getElementById("submitButton").disabled = !isOpen;
+            if (!isOpen) {
+                document.getElementById("participantForm").style.display = "none";
+            }
+        }
+
+        function openCreatorModeModal() {
+            document.getElementById("creatorModeModal").style.display = "block";
+        }
+
+        function closeCreatorModeModal() {
+            document.getElementById("creatorModeModal").style.display = "none";
+        }
+
+        function activateCreatorMode() {
+            let code = document.getElementById("creatorCode").value;
+            if (code === "Y14AT1N") {
+                alert("Creator mode activated!");
+                closeCreatorModeModal();
+                // Add your creator mode functionality here
+            } else {
+                alert("Invalid code. Please try again.");
+            }
+        }
+
+        // Automatically reset and close every 5 hours
+        setInterval(function() {
+            resetAndClose();
+        }, 5 * 60 * 60 * 1000);
+
+        function resetAndClose() {
+            participants = [];
+            let participantList = document
